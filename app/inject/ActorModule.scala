@@ -7,5 +7,6 @@ import actor._
 class ActorModule extends AbstractModule with AkkaGuiceSupport {
   def configure = {
     bindActor[FileManageActor]("filemanage-actor")
+    bindActor[FileProcessActor]("fileprocess-actor")
   }
 }

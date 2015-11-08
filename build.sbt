@@ -13,8 +13,10 @@ unmanagedBase <<= baseDirectory { base => base / "custom_lib" }
 libraryDependencies ++= {
   Seq(
     //jdbc,
-    //cache,
+    cache,
     ws,
+    "com.drewnoakes" % "metadata-extractor" % "2.8.1",
+    "com.googlecode.mp4parser" % "isoparser" % "1.1.7",
     specs2 % Test
   )
 }

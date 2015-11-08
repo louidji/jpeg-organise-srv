@@ -1,31 +1,34 @@
 package actor
 
 import java.io.File
-
 import akka.actor.{Actor, Props}
 import fr.louidji.tools.Organize
 import play.api.Logger
 import play.api.libs.concurrent.Akka
 import play.api.Play.current
-
+import javax.inject._
+import play.api.Configuration
 
 
 object FileProcessActor {
-  val baseDestDir = new File("/home/louis/photo/imported/")
 
   def props = Props[FileProcessActor]
 
-  
-
 }
 
-class FileProcessActor extends Actor  {
+class FileProcessActor @Inject() (configuration: Configuration) extends Actor  {
+  val imagesDestDir = configuration.getString("images.directory.dest") match {
+    case Some(s:String) =>  new File(s)
+    case _ => throw new Exception("Configuration error, please set images.directory.dest") 
+  }
+ 
+  
   override def receive = {
     case w: Work =>
       sender() ! Started(w.uuid, w.file)
-      Logger.info(s"Image Processing [${w.uuid}] : ${w.file} => ${FileProcessActor.baseDestDir.getPath}")
+      Logger.info(s"Image Processing [${w.uuid}] : ${w.file} => ${imagesDestDir.getPath}")
 
-      val result = Organize.organize(w.file, FileProcessActor.baseDestDir, Organize.BASE_DIR_PATTERN_FORMAT, Organize.PHOTO_NAME_LONG_FORMAT)
+      val result = Organize.organize(w.file, imagesDestDir, Organize.BASE_DIR_PATTERN_FORMAT, Organize.PHOTO_NAME_LONG_FORMAT)
 
 
       sender() ! Terminated(w.uuid, result, w.file)

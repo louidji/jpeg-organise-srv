@@ -10,20 +10,25 @@ import java.io.File
 import javax.inject._
 import play.api.cache.CacheApi
 import play.api.libs.json._
+import play.api.Configuration
 
-class Application @Inject() (managerActor: Manager, cache :CacheApi) extends Controller {
+class Application @Inject() (managerActor: Manager, cache :CacheApi, configuration: Configuration) extends Controller {
 
   case class FileStatus(uuid:String, status:String)
   implicit val fileStatusWrites = new Writes[FileStatus] {
     def writes(fileStatus: FileStatus) = Json.obj(
       "uuid" -> fileStatus.uuid,
-      "uuid" -> fileStatus.status
+      "status" -> fileStatus.status
     )
   }
 
 
   val fileProcessActor = managerActor.fileProcessActor
   val fileManageActor = managerActor.fileManageActor
+  val tmpDestDir = configuration.getString("images.directory.temp") match {
+    case Some(s:String) =>  s
+    case _ => throw new Exception("Configuration error, please set images.directory.temp") 
+  }
 
   def index = Action {
     Ok(views.html.index("Your new application is ready."))
@@ -35,29 +40,28 @@ class Application @Inject() (managerActor: Manager, cache :CacheApi) extends Con
 
       val uuid = java.util.UUID.randomUUID.toString
 
-      val file = new File(s"/tmp/upload/$uuid-$filename")
+      val file = new File(s"$tmpDestDir/$uuid-$filename")
 
       picture.ref.moveTo(file)
 
-      Logger.info(s"UUID : $uuid -- File : ${file.getPath}")
+      Logger.debug(s"UUID : $uuid -- File : ${file.getPath}")
       fileProcessActor.tell(Work(uuid, file), fileManageActor)
 
-      Ok(s"File uploaded, id $uuid")
+      Ok(Json.toJson(FileStatus(uuid, "File uploaded")))
     }.getOrElse {
-      Redirect(routes.Application.index).flashing(
-        "error" -> "Missing file")
+       BadRequest (Json.obj("status" ->"KO", "message" -> "Missing file"))
     }
   }
 
   def jsonUpload = Action(parse.temporaryFile) { request =>
     val uuid = java.util.UUID.randomUUID.toString
 
-    val file = new File(s"/tmp/upload/$uuid-jsonfile.tmp")
+    val file = new File(s"$tmpDestDir/$uuid-jsonfile.tmp")
     request.body.moveTo(file)
-    Logger.info(s"UUID : $uuid -- File : ${file.getPath}")
+    Logger.debug(s"UUID : $uuid -- File : ${file.getPath}")
     fileProcessActor.tell(Work(uuid, file), fileManageActor)
 
-    Ok(s"File uploaded, id $uuid")
+    Ok(Json.toJson(FileStatus(uuid, "File uploaded")))
   }
   
   def info(uuid:String) = Action {
