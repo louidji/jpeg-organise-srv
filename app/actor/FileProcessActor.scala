@@ -25,13 +25,13 @@ class FileProcessActor @Inject() (configuration: Configuration) extends Actor  {
   
   override def receive = {
     case w: Work =>
-      sender() ! Started(w.uuid, w.file)
+      sender() ! StartedFileProcessing(w.uuid, w.file)
       Logger.info(s"Image Processing [${w.uuid}] : ${w.file} => ${imagesDestDir.getPath}")
 
       val result = Organize.organize(w.file, imagesDestDir, Organize.BASE_DIR_PATTERN_FORMAT, Organize.PHOTO_NAME_LONG_FORMAT)
 
 
-      sender() ! Terminated(w.uuid, result, w.file)
+      sender() ! TerminatFileProcessing(w.uuid, result, w.file)
 
     case _ =>
       Logger.info("?? FileProcessActor ??")

@@ -11,6 +11,7 @@ import javax.inject._
 import play.api.cache.CacheApi
 import play.api.libs.json._
 import play.api.Configuration
+import play.api.Play.current
 
 class Application @Inject() (managerActor: Manager, cache :CacheApi, configuration: Configuration) extends Controller {
 
@@ -22,6 +23,7 @@ class Application @Inject() (managerActor: Manager, cache :CacheApi, configurati
     )
   }
 
+  
 
   val fileProcessActor = managerActor.fileProcessActor
   val fileManageActor = managerActor.fileManageActor
@@ -68,6 +70,10 @@ class Application @Inject() (managerActor: Manager, cache :CacheApi, configurati
     val cachedValue = cache.getOrElse(uuid)("Not Found")
     
     Ok(Json.toJson(FileStatus(uuid, cachedValue)))
+  }
+  
+  def ws = WebSocket.acceptWithActor[String, JsValue] { request => out =>
+    WebSocketActor.props(out, fileManageActor)
   }
 
   // TODO websocket pour avoir le flux de retour
