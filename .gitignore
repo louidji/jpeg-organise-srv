@@ -19,6 +19,13 @@ project/plugins/project/
 .worksheet
 .idea
 
+.cache-main
+.cache-tests
+.classpath
+.project
+.settings/
+
+
 ### SBT template
 # Simple Build Tool
 # http://www.scala-sbt.org/release/docs/Getting-Started/Directories.html#configuring-version-control
