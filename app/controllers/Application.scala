@@ -13,23 +13,20 @@ import play.api.libs.json._
 import play.api.Configuration
 import play.api.Play.current
 
-class Application @Inject() (managerActor: Manager, cache :CacheApi, configuration: Configuration) extends Controller {
+class Application @Inject() (managerActor: Manager, cache: CacheApi, configuration: Configuration) extends Controller {
 
-  case class FileStatus(uuid:String, status:String)
+  case class FileStatus(uuid: String, status: String)
   implicit val fileStatusWrites = new Writes[FileStatus] {
     def writes(fileStatus: FileStatus) = Json.obj(
       "uuid" -> fileStatus.uuid,
-      "status" -> fileStatus.status
-    )
+      "status" -> fileStatus.status)
   }
-
-  
 
   val fileProcessActor = managerActor.fileProcessActor
   val fileManageActor = managerActor.fileManageActor
   val tmpDestDir = configuration.getString("images.directory.temp") match {
-    case Some(s:String) =>  s
-    case _ => throw new Exception("Configuration error, please set images.directory.temp") 
+    case Some(s: String) => s
+    case _               => throw new Exception("Configuration error, please set images.directory.temp")
   }
 
   def index = Action {
@@ -51,7 +48,7 @@ class Application @Inject() (managerActor: Manager, cache :CacheApi, configurati
 
       Ok(Json.toJson(FileStatus(uuid, "File uploaded")))
     }.getOrElse {
-       BadRequest (Json.obj("status" ->"KO", "message" -> "Missing file"))
+      BadRequest(Json.obj("status" -> "KO", "message" -> "Missing file"))
     }
   }
 
@@ -65,19 +62,19 @@ class Application @Inject() (managerActor: Manager, cache :CacheApi, configurati
 
     Ok(Json.toJson(FileStatus(uuid, "File uploaded")))
   }
-  
-  def info(uuid:String) = Action {
+
+  def info(uuid: String) = Action {
     val cachedValue = cache.getOrElse(uuid)("Not Found")
-    
+
     Ok(Json.toJson(FileStatus(uuid, cachedValue)))
   }
-  
-  def ws = WebSocket.acceptWithActor[String, JsValue] { request => out =>
-    WebSocketActor.props(out, fileManageActor)
+
+  def ws = WebSocket.acceptWithActor[String, JsValue] { request =>
+    out =>
+      WebSocketActor.props(out, fileManageActor)
   }
 
   // TODO websocket pour avoir le flux de retour
   //https://www.playframework.com/documentation/2.4.x/ScalaWebSockets
 }
-
 
