@@ -1,6 +1,6 @@
 import _root_.sbt.Keys._
 
-name := """play-scala"""
+name := """upload-img-srv"""
 
 version := "1.0-SNAPSHOT"
 
@@ -28,3 +28,12 @@ routesGenerator := InjectedRoutesGenerator
 
 
 fork in run := true
+
+
+// setting a maintainer which is used for all packaging types
+maintainer := "Louidji"
+
+// exposing the play ports
+dockerExposedPorts in Docker := Seq(9000)
+
+dockerRepository := Some("louidji")

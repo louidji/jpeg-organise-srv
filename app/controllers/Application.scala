@@ -55,7 +55,7 @@ class Application @Inject() (managerActor: Manager, cache: CacheApi, configurati
   def jsonUpload = Action(parse.temporaryFile) { request =>
     val uuid = java.util.UUID.randomUUID.toString
 
-    val file = new File(s"$tmpDestDir/$uuid-jsonfile.tmp")
+    val file = new File(s"$tmpDestDir/$uuid-jsonfile.jpg")
     request.body.moveTo(file)
     Logger.debug(s"UUID : $uuid -- File : ${file.getPath}")
     fileProcessActor.tell(Work(uuid, file), fileManageActor)
