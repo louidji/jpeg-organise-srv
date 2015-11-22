@@ -1,4 +1,5 @@
 import _root_.sbt.Keys._
+import com.typesafe.sbt.packager.docker._
 
 name := """upload-img-srv"""
 
@@ -30,10 +31,53 @@ routesGenerator := InjectedRoutesGenerator
 fork in run := true
 
 
-// setting a maintainer which is used for all packaging types
-maintainer := "Louidji"
-
-// exposing the play ports
-dockerExposedPorts in Docker := Seq(9000)
 
 dockerRepository := Some("louidji")
+dockerExposedPorts in Docker := Seq(9000)
+
+
+//dockerCommands ++= Seq(
+//  ExecCmd("RUN", "mkdir", "-p", "/tmp/upload"),
+//  ExecCmd("RUN", "chown", "-R", "daemon:daemon", "/tmp/upload")
+//)
+//maintainer := "louidji"
+//dockerExposedVolumes += "/data/images"
+
+
+
+
+
+dockerCommands := Seq(
+	Cmd("FROM", "java:latest"),	
+	Cmd("MAINTAINER", "louidji"),
+	Cmd("WORKDIR", "/opt/docker"),
+	Cmd("COPY", "opt /opt"),
+	ExecCmd("RUN", "chown", "-R", "daemon:daemon", "."),
+	ExecCmd("RUN", "mkdir", "-p", "/data/images"),
+	ExecCmd("RUN", "chown", "-R", "daemon:daemon", "/data/images"),
+	ExecCmd("RUN", "mkdir", "-p", "/tmp/upload"),
+	ExecCmd("RUN", "chown", "-R", "daemon:daemon", "/tmp/upload"),
+	ExecCmd("VOLUME", "/data/images"),
+	Cmd("USER", "daemon"),
+	ExecCmd("ENTRYPOINT", "bin/" + name.value),
+	ExecCmd("CMD")
+)
+
+/*
+FROM java:latest
+MAINTAINER louidji
+WORKDIR /opt/docker
+ADD opt /opt
+RUN ["chown", "-R", "daemon:daemon", "."]
+RUN ["mkdir", "-p", "/data/images"]
+RUN ["chown", "-R", "daemon:daemon", "/data/images"]
+RUN ["mkdir", "-p", "/tmp/upload"]
+RUN ["chown", "-R", "daemon:daemon", "/tmp/upload"]
+VOLUME ["/data/images"]
+USER daemon
+ENTRYPOINT ["bin/upload-img-srv"]
+CMD []
+*/
+
+
+
