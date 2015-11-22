@@ -6,10 +6,8 @@ import play.api.Play.current
 import akka.actor._
 import play.api.cache._
 import javax.inject._
-import play.api.cache._
 import scala.concurrent.duration._
-import scala.collection.mutable.MutableList
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.{MutableList, ListBuffer}
 
 object FileManageActor {
 
@@ -40,7 +38,7 @@ class FileManageActor @Inject() (cache: CacheApi) extends Actor {
       listWebSocket.-=(d.actorRef)
 
     case _ =>
-      Logger.info("?? FileManageActor ??")
+      Logger.error("?? FileManageActor ??")
 
   }
 }

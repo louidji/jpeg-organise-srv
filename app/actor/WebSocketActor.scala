@@ -1,6 +1,7 @@
 package actor
 import akka.actor._
 import play.api.libs.json._
+import play.Logger
 
 object WebSocketActor {
   def props(out: ActorRef, fileManageActor: ActorRef) = Props(new WebSocketActor(out, fileManageActor))
@@ -18,6 +19,7 @@ class WebSocketActor(out: ActorRef, fileManageActor: ActorRef) extends Actor {
       out ! Json.obj("received" -> msg)
     case t: TerminatFileProcessing =>
       out ! Json.toJson(t)
+    case _ => Logger.error("?? WebSocketActor ??")
   }
 
   override def postStop() = fileManageActor ! DisconnectWebSocketActorRef(self)

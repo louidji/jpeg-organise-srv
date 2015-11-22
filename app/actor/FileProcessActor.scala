@@ -3,11 +3,10 @@ package actor
 import java.io.File
 import akka.actor.{ Actor, Props }
 import fr.louidji.tools.Organize
-import play.api.Logger
 import play.api.libs.concurrent.Akka
 import play.api.Play.current
 import javax.inject._
-import play.api.Configuration
+import play.api.{Configuration, Logger}
 
 object FileProcessActor {
 
