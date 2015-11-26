@@ -77,6 +77,8 @@ VOLUME ["/data/images"]
 USER daemon
 ENTRYPOINT ["bin/upload-img-srv"]
 CMD []
+
+docker run --rm -p 80:9000 -v /data/images:~/images  louidji/upload-img-srv:1.0-SNAPSHOT -Dlogger.resource=prod-logback.xml
 */
 
 
