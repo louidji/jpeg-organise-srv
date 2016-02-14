@@ -42,3 +42,7 @@ project/boot/
 
 
 /bin/
+
+*.iml
+
+.idea/*
