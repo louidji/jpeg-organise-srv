@@ -16,30 +16,37 @@ object FileManageActor {
 }
 
 class FileManageActor @Inject() (cache: CacheApi) extends Actor {
-  val listWebSocket = ListBuffer.empty[ActorRef]
+  case class Client(id:Option[String], actor: ActorRef) 
+  val listWebSocket = ListBuffer.empty[Client]
+  val cacheDuration = Duration.create(5, MINUTES) // 5.minutes  
   override def receive = {
-    case t: TerminatFileProcessing =>
-      Logger.debug(s"Image Finish Processing [${t.uuid}] : ${t.done}")
-      cache.set(t.uuid, s"Terminated, integrated : ${t.done}", 5 minutes)
-      if (t.file.exists()) t.file.delete()
-      listWebSocket.foreach { ref => ref ! t }
-
+    case t: TerminatFileProcessing  =>     
+      Logger.debug(s"Image Finish Processing [${t.clientId} / ${t.uuid}] : ${t.done}")      
+      cache.set(t.uuid, s"Terminated, integrated : ${t.done}", cacheDuration)
+      if (t.file.exists()) t.file.delete()      
+      listWebSocket.filter { p => t.clientId ==  p.id }.foreach { ref => ref.actor ! t }
 
     case s: StartedFileProcessing =>
-      Logger.debug(s"Start processing ${s.uuid} : ${s.file}")
-      cache.set(s.uuid, "Started", 5 minutes)
+      Logger.debug(s"Start processing ${s.uuid} : ${s.file}")      
+      cache.set(s.uuid, "Started", cacheDuration)
 
     case c: ConnectWebSocketActorRef =>
       Logger.debug(s"Connect ${c.actorRef}")
-      listWebSocket.+=(c.actorRef)
+      listWebSocket.+=(new Client(None,c.actorRef))
 
     case d: DisconnectWebSocketActorRef =>
       Logger.debug(s"Disconnect ${d.actorRef}")
-      listWebSocket.-=(d.actorRef)
+      val toRemove = listWebSocket.find { p => p.actor == d.actorRef }.get
+      listWebSocket.-=(toRemove)
+      
 
+    case id: IdClient =>
+      Logger.debug(s"IdClient ${id.uuid}")
+      val toUpdate = listWebSocket.find { p => p.actor == id.actorRef }.get
+      listWebSocket.-=(toUpdate).+=(new Client(Option(id.uuid), id.actorRef))
+      
     case _ =>
       Logger.error("?? FileManageActor ??")
 
   }
 }
-

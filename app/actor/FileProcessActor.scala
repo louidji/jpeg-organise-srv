@@ -25,7 +25,7 @@ class FileProcessActor @Inject() (configuration: Configuration) extends Actor {
       sender() ! StartedFileProcessing(w.uuid, w.file)
       Logger.debug(s"Image Processing [${w.uuid}] : ${w.file} => ${imagesDestDir.getPath}")
       val result = Organize.organize(w.file, imagesDestDir, Organize.BASE_DIR_PATTERN_FORMAT, Organize.PHOTO_NAME_LONG_FORMAT)
-      sender() ! TerminatFileProcessing(w.uuid, result, w.file)
+      sender() ! TerminatFileProcessing(w.uuid, w.clientId, result, w.file)
 
     case _ =>
       Logger.info("?? FileProcessActor ??")

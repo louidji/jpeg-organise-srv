@@ -36,15 +36,13 @@ class Application @Inject() (managerActor: Manager, cache: CacheApi, configurati
   def upload = Action(parse.multipartFormData) { request =>
     request.body.file("data").map { picture =>
       val filename = picture.filename
-
       val uuid = java.util.UUID.randomUUID.toString
-
       val file = new File(s"$tmpDestDir/$uuid-$filename")
-
+      val clientId = request.headers.get("Client-UUID")
+      Logger.debug(s"UUID : $uuid, Client UUID : $clientId -- File : ${file.getPath}")
+      
       picture.ref.moveTo(file)
-
-      Logger.debug(s"UUID : $uuid -- File : ${file.getPath}")
-      fileProcessActor.tell(Work(uuid, file), fileManageActor)
+      fileProcessActor.tell(Work(uuid, clientId, file), fileManageActor)
 
       Ok(Json.toJson(FileStatus(uuid, "File uploaded")))
     }.getOrElse {
@@ -54,11 +52,14 @@ class Application @Inject() (managerActor: Manager, cache: CacheApi, configurati
 
   def jsonUpload = Action(parse.temporaryFile) { request =>
     val uuid = java.util.UUID.randomUUID.toString
-
-    val file = new File(s"$tmpDestDir/$uuid-jsonfile.jpg")
+    val file = new File(s"$tmpDestDir/$uuid-jsonfile.jpg")        
+    val clientId = request.headers.get("Client-UUID")
+    
+    Logger.debug(s"UUID : $uuid, Client UUID : $clientId -- File : ${file.getPath}")
+    
     request.body.moveTo(file)
-    Logger.debug(s"UUID : $uuid -- File : ${file.getPath}")
-    fileProcessActor.tell(Work(uuid, file), fileManageActor)
+    
+    fileProcessActor.tell(Work(uuid, clientId, file), fileManageActor)
 
     Ok(Json.toJson(FileStatus(uuid, "File uploaded")))
   }
