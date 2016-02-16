@@ -6,8 +6,6 @@ import actor._
 import akka.actor._
 import play.api.Logger
 import play.api.mvc._
-import java.io.File
-import javax.inject._
 import play.api.cache.CacheApi
 import play.api.libs.json._
 import play.api.Configuration

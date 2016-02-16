@@ -36,14 +36,14 @@ class FileManageActor @Inject() (cache: CacheApi) extends Actor {
 
     case d: DisconnectWebSocketActorRef =>
       Logger.debug(s"Disconnect ${d.actorRef}")
-      val toRemove = listWebSocket.find { p => p.actor == d.actorRef }.get
-      listWebSocket.-=(toRemove)
+      val toRemove = listWebSocket.find { p => p.actor == d.actorRef }
+      if (toRemove.isDefined) listWebSocket.-=(toRemove.get)
       
 
     case id: IdClient =>
       Logger.debug(s"IdClient ${id.uuid}")
-      val toUpdate = listWebSocket.find { p => p.actor == id.actorRef }.get
-      listWebSocket.-=(toUpdate).+=(new Client(Option(id.uuid), id.actorRef))
+      val toUpdate = listWebSocket.find { p => p.actor == id.actorRef }
+      if (toUpdate.isDefined) listWebSocket.-=(toUpdate.get).+=(new Client(Option(id.uuid), id.actorRef))
       
     case _ =>
       Logger.error("?? FileManageActor ??")
