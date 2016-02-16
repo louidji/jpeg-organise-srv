@@ -4,11 +4,10 @@ import java.io.File
 import javax.inject._
 import actor._
 import akka.actor._
-import play.api.Logger
+import play.api.{Logger, Configuration}
 import play.api.mvc._
 import play.api.cache.CacheApi
 import play.api.libs.json._
-import play.api.Configuration
 import play.api.Play.current
 
 class Application @Inject() (managerActor: Manager, cache: CacheApi, configuration: Configuration) extends Controller {

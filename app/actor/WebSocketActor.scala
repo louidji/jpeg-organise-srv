@@ -20,12 +20,17 @@ class WebSocketActor(out: ActorRef, fileManageActor: ActorRef) extends Actor {
   def receive = {
     case msg: String =>
       Logger.debug(msg)
-      out ! Json.obj("received" -> msg)
-      val json = Json.parse(msg)
-      // client identification
-      val maybeId = (json \ "id").asOpt[String]
-      if (maybeId.isDefined) fileManageActor ! IdClient(maybeId.get, self)
-      
+      try {
+    	  // client identification
+        val json = Json.parse(msg)
+        val maybeId = (json \ "id").asOpt[String]
+        if (maybeId.isDefined) fileManageActor ! IdClient(maybeId.get, self) 
+      } catch {
+          case t: com.fasterxml.jackson.core.JsonParseException => {
+            Logger.error(s"Error on parsing ${msg}", t)
+            out ! Json.obj("received" -> msg)
+          }
+      }
     case t: TerminatFileProcessing =>
       //out ! Json.toJson(t)
       out ! JsObject(Seq(
